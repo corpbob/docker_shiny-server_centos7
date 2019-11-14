@@ -22,19 +22,10 @@ RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'RJDBC', 'dplyr',
 
 # Add RStudio binaries to PATH
 # export PATH="/usr/lib/rstudio-server/bin/:$PATH"
-ENV PATH /usr/lib/rstudio-server/bin/:$PATH 
 ENV LANG en_US.UTF-8
 
 RUN yum install -y openssl098e supervisor passwd pandoc
 
-# Install Rstudio server:
-RUN wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.1335-x86_64.rpm
-RUN yum -y install --nogpgcheck rstudio-server-rhel-1.2.1335-x86_64.rpm \
-	&& rm -rf rstudio-server-rhel-1.2.1335-x86_64.rpm
-
-RUN groupadd rstudio \
-	&& useradd -g rstudio rstudio \
-	&& echo rstudio | passwd rstudio --stdin
 
 RUN wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.9.923-x86_64.rpm
 RUN yum -y install --nogpgcheck shiny-server-1.5.9.923-x86_64.rpm \
@@ -47,12 +38,7 @@ RUN mkdir -p /var/log/shiny-server \
 	&& chown shiny:shiny -R /opt/shiny-server/samples/sample-apps \
 	&& chmod 755 -R /opt/shiny-server/samples/sample-apps 
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-RUN mkdir -p /var/log/supervisor \
-	&& chmod 755 -R /var/log/supervisor
+EXPOSE 3838
 
 
-EXPOSE 8787 3838
-
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
+CMD ["/usr/bin/shiny-server"] 
